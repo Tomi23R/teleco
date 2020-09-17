@@ -1,0 +1,174 @@
+MEMORIA PRACTICA 3
+Checkear kbps y bps.
+
+Ejercicio1:
+
+A: ¿ Cuántos paquetes tiene la traza de tráfico de red ?
+La traza de trafico de red tiene 1340 paquetes. El comando utilizado es "tshark -r practica3_4_53848476.pcap -T fields -e frame.number | tail -n 1". Este comando utiliza
+el programa tshark, analiza la traza practica3_4_53848476.pcap e indexa los paquetes de esta traza con el argumento "-e frame.number". Una vez indexados los paquetes, 
+observamos solo el indice del ultimo paquete utilizando una tuberia y el comando tail con el argumento "-n 1", para solo obtener el indice del ultimo paquete.
+
+B:¿ Cuál es el tamaño medio del paquete ?
+tshark -r practica3_4_53848476.pcap -T fields -e frame.len | paste -sd+ | bc -l
+Tamanio total de los paquetes de la traza 438448 bytes
+El resultado lo dividimos entre 1340 y obtenemos el tamano medio.
+438448/1340 = 327.2 bytes 
+
+C:¿ Cuál es la tasa media en kbps (bits por segundo) del enlace que monitoriza la traza ? ¿ y en pps
+(paquetes por segundo) ?
+Tiempo total traza: 39.485382000
+tshark -r practica3_4_53848476.pcap -T fields -e frame.time_relative | tail -n 1
+El tiempo total que tarda la traza en generar todos los paquetes es 39.485382, obtenemos este tiempo gracias al comando " ". El argumento -e frame.time_relative nos da el 
+tiempo que ha tardado en generarse el paquete desde el comienzo de la traza y utilizando una tuberia y el comando tail -n 1 obtenemos el tiempo final que ha tardado la 
+traza en generar todos los paquetes.
+Tamanio total de los paquetes de la traza: 438.448 kb
+Tiempo total de la traza: 39.485382 s
+Numero de paquetes: 1340
+438.448/39.485382 = 11.104058712 kbps
+1340/39.485382 = 33.936609756 pps
+
+Ejercicio 2:
+Escoja una dirección MAC de la traza.
+Direccion MAC elegida: ff:ff:ff:ff:ff:ff
+Para obtener esta direccion MAC he utilizado el comando "tshark -r practica3_4_53848476.pcap -T fields -e eth.src", que gracias al argumento "-e eth.src" te devuelve la
+dreccion MAC origen de los paquetes. Una vez obtenidas las direcciones MAC, hemos elegido una aleatoriamente.
+
+A: Quédese solo con el tráfico destinado a esa MAC elegida. ¿Cuál es la tasa media (en kb/s) del
+tráfico de red?
+Utilizando el comando "tshark -r practica3_4_53848476.pcap -T fields -e frame.len -Y 'eth.dst eq ff:ff:ff:ff:ff:ff' | paste -sd+ | bc -l" hemos obtenido los paquetes cuya
+direccion MAC de destino es "ff:ff:ff:ff:ff:ff" gracias al argumento "-Y 'eth.dst eq ff:ff:ff:ff:ff:ff'", despues gracias al argumento "-e frame.len" hemos obtenido el 
+tamanio de los paquetes que se envian a nuestra direccion MAC de destino, y por ultimo gracias a una tuberia y al comando "paste -sd+ | bc -l" hemos obtenido la suma
+del tamanio de dichos paquetes.
+Tamanio total de los paquetes enviados a nuestra direccion MAC = 45.362 kb
+tshark -r practica3_4_53848476.pcap -T fields -e frame.time_delta -Y 'eth.dst eq ff:ff:ff:ff:ff:ff' | paste -sd+ | bc -l
+Tiempo total del trafico de red = 19.053269000
+Tasa media en kbps: 45.362/19.053269000 =  1.166213318 kbps
+
+B: Quédese solo con el tráfico originado desde la MAC en estudio ¿Cuál es la tasa media (en kb/s)
+del tráfico de red?
+Utilizando el comando "tshark -r practica3_4_53848476.pcap -T fields -e frame.len -Y 'eth.src eq ff:ff:ff:ff:ff:ff' | paste -sd+ | bc -l" hemos obtenido los paquetes cuya direccion MAC origen 
+es "ff:ff:ff:ff:ff:ff" gracias al argumento "-Y 'eth.src eq ff:ff:ff:ff:ff:ff'", para realizar la suma hemos utilizado la misma metodologia que en el apartado A utilizando
+una tuberia y el comando "paste -sd+ | bc -l". No hay ningun paquete cuya direccion MAC origen sea "ff:ff:ff:ff:ff:ff", por lo que la tasa media del trafico de red en kbps
+es 0 kbps.
+
+C: ¿ Cuántos paquetes hay que no tengan esta MAC en origen ni en destino ?
+Utilizando el comando "tshark -r practica3_4_53848476.pcap -T fields -e frame.number -Y 'eth.dst!=ff:ff:ff:ff:ff:ff and eth.src!=ff:ff:ff:ff:ff:ff' | wc -l" hemos hayado el
+numero de paquetes cuya direccion MAC de destino y de origen es distinta a nuestra direccion MAC elegida. Para filtrar la traza y hayar los paquetes deseados hemos 
+utilizado el argumento "-Y 'eth.dst!=ff:ff:ff:ff:ff:ff and eth.src!=ff:ff:ff:ff:ff:ff'",una vez obtenidos los paquetes deseados los hemos sumado utilizando una tuberia y
+el comando "wc -l". El numero de paquetes que no tiene nuestra MAC en origen ni en destino es 1034
+
+Ejercicio 3: 
+Filtre la traza proporcionada en función del siguiente esquema y responda a las siguientes cuestiones:
+	Paquete de inicio: Número de pareja * 10 (en caso de ser la pareja 10, la traza filtrada deberá comenzar a partir del paquete número 100).
+		Paquete de inicio = 4 x 10 = 40
+	Paquete de fin: Paquete de inicio + 500 (en caso de ser la pareja 10, la traza filtrada deberá acabar en el paquete 600).
+		Paquete de fin = 40 + 500 = 540
+
+A: ¿ Cuántos paquetes de la traza son IP ? ¿ Y ARP ? ¿ Hay otro tipo de protocolos ? En caso
+afirmativo, ¿ sabrías decir de qué protocolos son ?
+Gracias al comando "tshark -r practica3_4_53848476.pcap -T fields -e frame.number -Y 'frame.number >=40 and frame.number <= 540 and eth.type eq 0x00000800' | wc -l" hemos 
+hayado que el numero de paquetes de la traza de tipo IP son 389. Filtramos el paquete utilizando el argumento "-Y 'frame.number >=40 and frame.number <= 540 and eth.type
+ eq 0x00000800'" que filtra los paquetes que estan entre 40 y 540, ambos incluidos y cuyo protocolo encapsulado sea "0x00000800" (protocolo IP). Una vez obtenidos los
+paquetes deseaos los sumamos utilizando el una tuberia y el comando "wc -l".
+Gracias al comando "tshark -r practica3_4_53848476.pcap -T fields -e frame.number -Y 'frame.number >=40 and frame.number <= 540 and eth.type eq 0x00000806' | wc -l" hemos
+obtenido que hay 48 paquetes de tipo ARP. El comando utilizado es similar al anterior, la unica diferencia es que al filtrar los paquetes el eth.type lo igualamos a 
+0x00000806 (protocolo ARP).
+Gracias al comando "tshark -r practica3_4_53848476.pcap -T fields -e frame.number -e eth.type -Y 'frame.number >=40 and frame.number <= 540 and eth.type!=0x00000806 and
+ eth.type!=0x00000800'" hemos filtrado todos los paquetes cuyo protocolo encapsulado es distinto a IP(0x00000800) y a ARP(0x00000806). Y hemos obtenido 64 paquetes cuyo 
+protocolo encapsulado es 0x000086dd, que se corresponde al protoclo Ipv6.
+
+B: De los paquetes IP, ¿ Cuántos paquetes TCP hay en la traza ? ¿ y UDP ? ¿ e ICMP ? ¿ hay
+paquetes de otros protocolos ? En caso afirmativo, ¿ sabrías decir qué tipo de paquetes son ?
+17(UDP),1(ICMP),6(TCP),2(IGMPv2),103(PIMv2)
+Para hayar el numero de paquetes TCP hemos utilizado el comando "tshark -r practica3_4_53848476.pcap -T fields -e frame.number -e eth.type -e ip.proto -Y 'frame.number >=40
+ and frame.number <= 540 and eth.type eq 0x00000800 and ip.proto eq 6' | wc -l", que es similar al comando del ejercicio anterior pero aplicando un filtro mas que es 
+frame.number eq 6, ya que el protocolo TCP es de tipo IP (0x00000800) y para que sea de tipo TCP el proto.type debe ser 6. El numero de paquetes TCP es 185.
+Para hayar el numero de paquetes UDP hemos utilizado la misma metodologia con el comando "tshark -r practica3_4_53848476.pcap -T fields -e frame.number -e eth.type -e
+ ip.proto -Y 'frame.number >=40 and frame.number <= 540 and eth.type eq 0x00000800 and ip.proto eq 17' | wc -l", con la diferencia de que cuando aplicamos el filtro 
+ip.proto lo igualamos a 17 para que sea de tipo UDP. El numero de paquetes UDP es 167.
+Para hayar el numero de paquetes ICMP hemos utilizado la misma metodologia con el comando "tshark -r practica3_4_53848476.pcap -T fields -e frame.number -e eth.type -e 
+ ip.proto -Y 'frame.number >=40 and frame.number <= 540 and eth.type eq 0x00000800 and ip.proto eq 1' | wc -l", con la diferencia de que cuando aplicamos el filtro 
+ip.proto lo igualamos a 1 para que sea de tipo UDP. El numero de paquetes ICMP es 34.
+Para buscar paquetes diferentes a UDP, ICMP y TCP hemos utilizado el comando " ", que descarta los paquetes cuyo ip.proto es 17,1 o 6.
+Hay otros dos tipos de paquetes que son IGMPv2, cuyo ip.proto es 2 y PIMv2, cuyo ip.proto es 103. El numero de paquetes IGMPv2 es 2.El numero de paquetes PIMv2 es 1.
+Para hayar ambos numeros de paquetes hemos utilizado una metodologia similar a la de los apartados anteriores, con la diferencia del filtro aplicado ip.proto, es decir
+para hayar el numero de IGMPv2 hemos utilizado " " y para PIMv2 " "
+
+C: Basándose en la dirección IP origen y destino así como del puerto origen y destino del tercer
+paquete de la traza. ¿ Cuál sería el número de paquetes y la tasa media en bps (bits por segundo)
+del flujo UDP al cual pertenece el paquete previamente descrito ?
+tshark -r practica3_4_53848476.pcap -T fields -e frame.number -e ip.src -e ip.dst -e udp.srcport -e udp.dstport -Y 'frame.number eq 3'
+Paquete 3:
+	Ip origen:129.68.4.64
+	Ip destino:109.103.81.66
+	Puerto origen:51489
+	Puerto destino:37
+tshark -r practica3_4_53848476.pcap -T fields -e frame.number -e frame.len -Y 'udp.srcport eq 37 and udp.dstport eq 51489 and ip.dst eq 129.68.4.64 and ip.src eq
+ 109.103.81.66'
+Gracias a este comando obtenemos que tan solo hay un paquete que pertence al flujo UDP del tercer paquete y cuyo tamanio es 119 bits. EL tiempo que tarda en generarse dicho
+paquete lo obtenemos gracias al comando "tshark -r practica3_4_53848476.pcap -T fields -e frame.number -e frame.len -e frame.time_delta -Y 'udp.srcport eq 37 and 
+udp.dstport eq 51489 and ip.dst eq 129.68.4.64 and ip.src eq 109.103.81.66'". El tiempo que tarda en generarse dicho paquete es 0.037650000, por lo que la tasa media es 
+119/0.037650000 = 3160.690571049 bps.
+
+D: Graficar la función ECDF (Empirical Cumulative Distribution Function) para el tamaño de
+todos los paquetes, así como sólo aquellos pertenecientes al protocolo TCP y sólo aquellos
+pertenecientes al protocolo UDP. ¿ Se observa alguna moda en cualquiera de los casos ? ¿ Qué
+porcentaje de paquetes son mayores de 400 bytes en cualquiera de los casos ?
+Hemos utilizado el comando "tshark -r practica3_4_53848476.pcap -T fields -e frame.len | sort -g | uniq -c > tamanioPaquetes.dat" para obtener un fichero con la cantidad 
+de paquetes de una determinda longitud. Sucesivamente hemos ejecutado el script utilizando ./plot_cdf.sh tamanioPaquetes.dat "allPackages" "packageNumber". En la grafica 
+allPackages se observa una moda en los paquetes con tamanio 66.
+Hemos utilizado el mismo comando que el de la grafica anterior, con la diferencia de que hemos filtrado los paquetes utilizando el argumento -Y 'eth.type eq 0x00000800 and
+ip.proto eq 6' para obtener los paquetes del tipo TCP. Sucesivamente hemos ejecutado el script igual que en el apartado anterior cambiando el fichero de datos. Comando:
+"tshark -r practica3_4_53848476.pcap -T fields -e frame.len -Y 'eth.type eq 0x00000800 and ip.proto eq 6' | sort -g | uniq -c > tamanioTCP.dat" 
+Se observa una moda en los paquetes con tamanio 66.
+Hemos utilizado el mismo comando que el de la grafica anterior, con la diferencia de que hemos filtrado los paquetes utilizando el argumento -Y 'eth.type eq 0x00000800 and
+ip.proto eq 17' para obtener los paquetes del tipo UDP. Sucesivamente hemos ejecutado el script igual que en el apartado anterior cambiando el fichero de datos. Comando:
+"tshark -r practica3_4_53848476.pcap -T fields -e frame.len -Y 'eth.type eq 0x00000800 and ip.proto eq 17' | sort -g | uniq -c > tamanioUDP.dat"
+Se observa una moda en los paquetes con tamanio 92.
+Numero total de paquetes : 1340
+Numero total de paquetes con tamanio mayor a 400 bytes : 273
+	tshark -r practica3_4_53848476.pcap -T fields -e frame.len -Y 'frame.len > 400' | wc -l
+Porcentaje (Todos los paquetes mayores que 400 bytes) = 
+Numero total de paquetes TCP : 641
+	tshark -r practica3_4_53848476.pcap -T fields -e frame.len -Y 'eth.type eq 0x00000800 and ip.proto eq 6' | wc -l
+Numero total de paquetes TCP con tamanio mayor a 400 bytes : 225
+	tshark -r practica3_4_53848476.pcap -T fields -e frame.len -Y 'eth.type eq 0x00000800 and ip.proto eq 6 and frame.len > 400' | wc -l
+Porcentaje (Todos los paquetes TCP mayores que 400 bytes) =
+Numero total de paquetes UDP : 374
+        tshark -r practica3_4_53848476.pcap -T fields -e frame.len -Y 'eth.type eq 0x00000800 and ip.proto eq 17' | wc -l
+Numero total de paquetes TCP con tamanio mayor a 400 bytes : 23
+        tshark -r practica3_4_53848476.pcap -T fields -e frame.len -Y 'eth.type eq 0x00000800 and ip.proto eq 17 and frame.len > 400' | wc -l
+Porcentaje (Todos los paquetes UDP  mayores que 400 bytes) =
+
+E: ¿ Cuáles son los 5 puertos (destino y origen) más populares tanto en número de paquetes como
+en número de bytes ? ¿ A qué se debe la diferencia de popularidad en paquetes y en bytes ?
+EN PAQUETES:
+
+tshark -r practica3_4_53848476.pcap -T fields -e tcp.dstport | sort -g | uniq -c
+tcp.tcp.dstport: 247 64
+	     120 58724
+	     79 291
+
+tshark -r practica3_4_53848476.pcap -T fields -e tcp.srcport | sort -g | uniq -c
+tcp.tcp.srcport:229 64
+	    117 58724
+	    58 291
+
+tshark -r practica3_4_53848476.pcap -T fields -e udp.dstport | sort -g | uniq -c
+tshark.udp.dstport:75 17476
+	       39 547
+	       36 1900
+
+tshark -r practica3_4_53848476.pcap -T fields -e udp.srcport | sort -g | uniq -c
+tshark.udp.srcport:73 17476
+		   60 37
+		   39 546
+
+
+TOP5
+	tcp.dstport: Puerto 64 con 247
+	tcp.srcport: Puerto 64 con 229
+	tcp.dstport: Puerto 58724 con 120
+	tcp.srcport: Puerto 58724 con 117
+	tcp.dstport: Puerto 291 con 79
+

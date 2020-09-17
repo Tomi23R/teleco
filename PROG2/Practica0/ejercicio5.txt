@@ -1,0 +1,25 @@
+1. Compila con: gcc -g testValgrind.c -o testValgrind
+y ejecuta el programa con el siguiente argumento: ./testValgrind 0123456789
+¿Qué ocurre?
+    El programa imprime por pantalla la serie de numeros 0123456789
+
+2. Ejecutar con Valgrind: valgrind ./testValgrind 0123456789
+¿A qué se deben los 3 warnings?
+- Conditional jump or move depends on unitialised value(s)
+    Este error nos indica que queremos realizar una accion que depende de una varible sin inicializar.
+- Invalid free() / delete / delete[] / realloc()
+    Este error nos indica que se esta tratando de ejecutar una operacion en memoria dinamica que no es posible realizar.
+- Invalid write of size 1
+    Este error nos indica que se esta produciendo un error de escritura de un byte.
+
+3. ¿Al añadir el flag -Wall a la compilación, nos advierte de algún peligro relacionado con alguno de los errores? ¿Con cuál(es)?
+    Al añadir el flag -Wall el compilador nos advierte del error "warning: ‘str’ may be used uninitialized in this function [-Wmaybe-uninitialized]"
+    Este warning nos advierte del mismo error que valgrind en la linea 11, se esta tratando de hacer un realloc de una varible que esta sin 
+    inicializar.
+    
+4. ¿Cómo se solucionan los problemas encontrados?
+    Para corregir este error primero es necesario inicializar la varible str a NULL, de esta manera nos quitaremos el primer warning. El segundo
+    y el tercer error de valgrind aparecen porque hemos reservado memoria para una cadena de 10 caracteres y la cadena que queremos copiar es 
+    tambien de 10 caracteres, al ejecutar el programa sin valgrind no hay ningun error, ya que la cadena str tiene suficientes bytes para copiar
+    la otra cadena. El problema aparece al ejecutar valgrind, que detecta que la cadena esta llena, pero no tiene ningun caracter fin de cadena(\0),
+    por lo que para corregir este error simplemente tenemos que reservar memoria para un caracter mas, el caracter fin de cadena.

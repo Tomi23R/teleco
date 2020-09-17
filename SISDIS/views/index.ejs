@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>
+		P3
+	</title>
+	<link rel="stylesheet" href="css/index.css">
+	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+</head>
+
+<body>
+	<center>
+		<h1>Press Banca / Press Militar / Peso Muerto</h1>
+	</center>
+
+	<p>Fecha y hora: <span id="datetime"></span></p>
+	<% if(sesion){ %>
+		<form action="sign_out">
+        	<button type="submit">LOG OUT</button>
+      	</form>
+      	<a>Usuario conectado: <%= sesion %></a>
+	<% } else{ %>
+		<form action="login">
+        	<button type="submit">LOG IN</button>
+      	</form>
+	<% } %>
+	<h4>Posturas Iniciales de Press banca/Press militar/Peso muerto&nbsp;&nbsp;
+		&nbsp;&nbsp;&nbsp;Posturas Finales de Press banca/Press militar/Peso muerto</h4>
+	<!-- -->
+	<img src="img/Inicial.jpg" width="425" height="250">
+	<img src="img/Final.jpg" width="425" height="250">
+
+	<br>
+	<br>
+	<br>
+	<br>
+	<br>
+	<style>
+		table,
+		td {
+			border: 1px solid black;
+		}
+	</style>
+
+<div id="app">
+		<table id="myTable">
+			<TR>
+				<TH> </TH>
+				<TH><button type="button" v-on:click="addNewRow(1)">++</button> </TH>
+				<TH><button type="button" v-on:click="increps(1)">+</button> </TH>
+				<TH><button type="button" v-on:click="incpeso(0.5)">+</button></TH>
+				<TH><button type="button" v-on:click="incdif(0.25)">+</button> </TH>
+				
+				<!--</TR>-->
+			</TR><tr>
+				<!--<TR>-->
+				<TH>Mark</TH>
+				<TH>Serie</TH>
+				<TH>Reps</TH>
+				<TH>Peso</TH>
+				<TH>Dificultad</TH>
+			</TR> 
+
+			<TR v-for="p in displayedPosts">
+				<TR v-for="p in displayedPosts">
+					<TD> <input type="checkbox"> </TD>
+				<TD>
+					<p> {{p.ser}} </p>
+				</TD>
+				<TD>
+					<p> {{p.reps}} </p>
+				</TD>
+				<TD>
+					<p> {{p.peso}} </p>
+				</TD>
+				<TD>
+					<p> {{p.dificultad}} </p>
+				</TD>
+			</TR>
+			
+			<!-- v1.displayedPosts[0].peso+=-->
+			<!-- if del peso falta-->
+			<TR>
+			<TD></TD>
+			<TD><button type="button" v-on:click="delunRow(-1)">--</button></TD>
+			<TD><button type="button" v-on:click="increps(-1)">-</button></TD>
+			<TD><button type="button" v-on:click="incpeso(-0.5)">-</button></TD>
+			<TD><button type="button" v-on:click="incdif(-0.25)">-</button></TD>
+			<!--</TR>-->
+			</TR>
+		</table>
+		<button type="button" v-on:click="camb_ejerc_ant">I-</button>
+		<button type="button" v-on:click="camb_ejerc_sig">-D</button>
+
+	</div>
+
+	<script src="js/variables_P3.js"></script>
+
+	<script src="js/fecha_hora.js"></script>
+
+</body>
+
+</html>
